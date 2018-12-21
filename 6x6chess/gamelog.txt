@@ -1,0 +1,26 @@
+
+1: d3 Na4
+2: Qd2 Nxb2+
+3: Kc1 Na4
+4: Nc3 b4
+5: Nxa4 Qxa4
+6: c3 Rc6
+7: xb4 cxb4+
+8: Nc2 Rxc2+
+9: Qxc2 Qa3+
+10: Qb2 Qa4
+11: Kd2 Nc5
+12: Rfc1 Ne6
+13: a3 d4
+14: Qxb4+ xb4
+15: Rc6+ Kxc6
+16: Rc1+ Kd5
+17: Rc6 Kxc6
+18: e3 Qxa3
+19: xd4 Nxd4
+20: f3 Qa1
+21: Ke3 Rd6
+22: f4 Qc1+
+23: Kf2 Qd1
+24: xe5 Qf3+
+25: Ke1 Qe2# 0-1
