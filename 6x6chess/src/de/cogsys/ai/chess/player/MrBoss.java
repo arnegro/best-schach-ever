@@ -4,7 +4,9 @@ import de.cogsys.ai.chess.game.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import de.cogsys.ai.chess.control.ChessGameConsole;
@@ -20,11 +22,20 @@ public class MrBoss extends ChessPlayer {
     private int    depth;
     private long   delay;
     private Random rnd;
+    
+	Map<Integer,Integer> FigValues = new HashMap<Integer,Integer>();
 
+	final double WinValue = 200;
+	
     public MrBoss(final int depth, final long delay, final long seed) {
         this.depth = depth;
         this.delay = delay;
         this.rnd   = new Random(seed);
+    	FigValues.put(Figure.PAWN, 10);
+    	FigValues.put(Figure.ROOK, 50);
+    	FigValues.put(Figure.BISHOP, 30);
+    	FigValues.put(Figure.KNIGHT, 30);
+    	FigValues.put(Figure.QUEEN, 90);
     }
 
     public MrBoss(final int depth, final int delay) {
@@ -45,6 +56,40 @@ public class MrBoss extends ChessPlayer {
 
         this.mycolor = color;
     }
+
+	
+    private double evaluateGame(ChessGame game, int color) {
+    	int[] board = game.getBoard();
+    	double beThis = 0;
+    	double beOther = 0;
+    	
+    	 if (game.wins(color)) {
+             return WinValue;
+         } else if (game.wins(Figure.other_color(color))) {
+             return -WinValue;
+         } else if (game.isDraw()) {
+             return 0;
+         }
+    	
+    	for (int fig : board) {
+    		if (Figure.color(fig) == color) {
+    			beThis += figValue(fig);
+    		} else {
+    			beOther += figValue(fig);
+    		}
+    	}
+    	return beThis-beOther;
+    }
+	
+	private int figValue(int fig) {
+
+        fig = Figure.figure(fig);
+		
+		if (FigValues.containsKey(fig))
+			return FigValues.get(fig);
+		else
+			return 0;
+	}
 
 	@Override
     public void generateNextMove(final ChessGameConsole c) {
@@ -133,46 +178,4 @@ public class MrBoss extends ChessPlayer {
         return maxscore;
     }
     
-    private double evaluateGame(ChessGame game, int color) {
-    	int[] board = game.getBoard();
-    	double beThis = 0;
-    	double beOther = 0;
-    	
-    	 if (game.wins(color)) {
-             return 200;
-         } else if (game.wins(Figure.other_color(color))) {
-             return -200;
-         } else if (game.isDraw()) {
-             return 0;
-         } 
-    	
-    	for (int fig : board) {
-    		if (Figure.color(fig) == color) {
-    			beThis += figValue(fig);
-    		} else {
-    			beOther += figValue(fig);
-    		}
-    	}
-    	return beThis-beOther;
-    }
-	
-	private int figValue(int fig) {
-
-        fig = Figure.figure(fig);
-		
-		switch (fig) {
-        case Figure.PAWN:
-            return 10;
-        case Figure.ROOK:
-        	return 50;
-        case Figure.BISHOP:
-            return 30;
-        case Figure.KNIGHT:
-            return 30;
-        case Figure.QUEEN:
-            return 90;
-		}
-		return 0;
-	}
-
 }
