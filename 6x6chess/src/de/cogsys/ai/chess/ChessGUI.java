@@ -23,11 +23,7 @@ import de.cogsys.ai.chess.gui.ChessGamePanelListener;
 import de.cogsys.ai.chess.gui.ChessRes;
 import de.cogsys.ai.chess.gui.MainFrame;
 import de.cogsys.ai.chess.gui.StatusPanel;
-import de.cogsys.ai.chess.player.ChessPlayer;
-import de.cogsys.ai.chess.player.Human;
-//import de.cogsys.ai.chess.player.MrExpert;
-import de.cogsys.ai.chess.player.MrNovice;
-import de.cogsys.ai.chess.player.MrRandom;
+import de.cogsys.ai.chess.player.*;
 
 /**
  * @author Sebastian Otte
@@ -49,7 +45,7 @@ public class ChessGUI {
 		"MrNovice (depth 2)", 
 		"MrNovice (depth 3)", 
 		"MrNovice (depth 4)",
-		"MrExpert", 
+		"MrBoss", 
 		"MrRandom"
 	};
 
@@ -62,8 +58,8 @@ public class ChessGUI {
 			return new MrNovice(3, 1000);
 		if (agent.equals(agents[3]))
 			return new MrNovice(4, 1000);
-//		if (agent.equals(agents[4]))
-//			return new MrExpert(5, 1000);
+		if (agent.equals(agents[4]))
+			return new MrBoss(3, 1000);
 		if (agent.equals(agents[5]))
 			return new MrRandom(1000);
 		return null;
