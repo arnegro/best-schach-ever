@@ -14,7 +14,7 @@ import de.cogsys.ai.chess.control.ChessGameConsole;
 public class MrBoss extends ChessPlayer {
 	
     private static final long TIME_THRESHOLD = 2000;
-    private static final int  DEFAULT_DEPTH  = 4;
+    private static final int  DEFAULT_DEPTH  = 5;
     private static final long DEFAULT_DELAY = 1000;
 	
 	private int mycolor;
@@ -25,17 +25,18 @@ public class MrBoss extends ChessPlayer {
     
 	Map<Integer,Integer> FigValues = new HashMap<Integer,Integer>();
 
-	final double WinValue = 200;
+	final double WinValue = 20000;
+	final double CheckValue = 20;
 	
     public MrBoss(final int depth, final long delay, final long seed) {
         this.depth = depth;
         this.delay = delay;
         this.rnd   = new Random(seed);
     	FigValues.put(Figure.PAWN, 10);
-    	FigValues.put(Figure.ROOK, 50);
+    	FigValues.put(Figure.ROOK, 60);
     	FigValues.put(Figure.BISHOP, 30);
-    	FigValues.put(Figure.KNIGHT, 30);
-    	FigValues.put(Figure.QUEEN, 90);
+    	FigValues.put(Figure.KNIGHT, 50);
+    	FigValues.put(Figure.QUEEN, 200);
     }
 
     public MrBoss(final int depth, final int delay) {
@@ -60,8 +61,8 @@ public class MrBoss extends ChessPlayer {
 	
     private double evaluateGame(ChessGame game, int color) {
     	int[] board = game.getBoard();
-    	double beThis = 0;
-    	double beOther = 0;
+    	
+    	this.updateFigVals(game, color);
     	
     	 if (game.wins(color)) {
              return WinValue;
@@ -70,15 +71,24 @@ public class MrBoss extends ChessPlayer {
          } else if (game.isDraw()) {
              return 0;
          }
+    	 
+    	 double score = 0;
+    	 
+    	 if (game.isCheck(color)) {
+             score -= CheckValue;
+         }
+         if (game.isCheck(Figure.other_color(color))) {
+             score += CheckValue;
+         }
     	
     	for (int fig : board) {
     		if (Figure.color(fig) == color) {
-    			beThis += figValue(fig);
+    			score += figValue(fig);
     		} else {
-    			beOther += figValue(fig);
+    			score += figValue(fig);
     		}
     	}
-    	return beThis-beOther;
+    	return score;
     }
 	
 	private int figValue(int fig) {
@@ -101,6 +111,7 @@ public class MrBoss extends ChessPlayer {
         System.out.println("Searching " + g.generateValidMoves().size() + " moves");
 
         double maxscore = Double.NEGATIVE_INFINITY;
+		double alpha = Double.NEGATIVE_INFINITY;
         List<ChessMove> bestmoves = new ArrayList<ChessMove>();
 
 		
@@ -108,7 +119,7 @@ public class MrBoss extends ChessPlayer {
 		Collections.shuffle(moves, rnd);
 
 		for (ChessMove m : moves) {
-            final double score = min(g.performMove(m), c, this.depth);
+            final double score = min(g.performMove(m), c, this.depth, alpha, Double.POSITIVE_INFINITY);
             
             if (Thread.currentThread().isInterrupted()) {
             	break;
@@ -122,6 +133,7 @@ public class MrBoss extends ChessPlayer {
             } else if (score == maxscore) {
                 bestmoves.add(m);
             }
+            alpha = Math.max(alpha, maxscore);
         }
 
         final ChessMove bestmove = bestmoves.get(rnd.nextInt(bestmoves.size()));
@@ -136,7 +148,7 @@ public class MrBoss extends ChessPlayer {
         }
     } 
     
-    private double min(final ChessGame game, final ChessGameConsole c, final int depth) {
+    private double min(final ChessGame game, final ChessGameConsole c, final int depth, double alpha, double beta) {
         if ((depth <= 0) || game.ends() || (c.getTimeLeft() < TIME_THRESHOLD)) {
             return evaluateGame(game, this.mycolor);
         }
@@ -147,17 +159,21 @@ public class MrBoss extends ChessPlayer {
         double minscore = Double.POSITIVE_INFINITY;
 
         for (ChessMove m : moves) {
-            final double score = max(game.performMove(m), c, depth - 1);
+            final double score = max(game.performMove(m), c, depth - 1, alpha, beta);
 
             if (score < minscore) {
                 minscore = score;
             }
+            if (minscore <= alpha) {
+            	return minscore;
+            }
+            beta = Math.min(beta, minscore);
         }
 
         return minscore;        
     }
     
-    private double max(final ChessGame game, final ChessGameConsole c, final int depth) {
+    private double max(final ChessGame game, final ChessGameConsole c, final int depth, double alpha, double beta) {
         if ((depth <= 0) || game.ends() || (c.getTimeLeft() < TIME_THRESHOLD)) {
             return evaluateGame(game, this.mycolor);
         }
@@ -168,14 +184,22 @@ public class MrBoss extends ChessPlayer {
         double maxscore = Double.NEGATIVE_INFINITY;
 
         for (ChessMove m : moves) {
-            final double score = min(game.performMove(m), c, depth - 1);
+            final double score = min(game.performMove(m), c, depth - 1, alpha, beta);
 
             if (score > maxscore) {
                 maxscore = score;
             }
+            if (maxscore >= beta) {
+            	return maxscore;
+            }
+            alpha = Math.max(alpha, maxscore);
         }
 
         return maxscore;
+    }
+    
+    private void updateFigVals(ChessGame game, int color) {
+    	
     }
     
 }

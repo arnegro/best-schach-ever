@@ -59,7 +59,7 @@ public class ChessGUI {
 		if (agent.equals(agents[3]))
 			return new MrNovice(4, 1000);
 		if (agent.equals(agents[4]))
-			return new MrBoss(3, 1000);
+			return new MrBoss(2, 1000);
 		if (agent.equals(agents[5]))
 			return new MrRandom(1000);
 		return null;
